@@ -408,7 +408,7 @@ if __name__ == '__main__':
                         shutil.copyfile(join(sourmash_dir,"0,0,0,0,0,0","1.sig"),join(rep_bac_dir, "1.sig"))
                         shutil.copy(filename, target_filename)
                     else:
-                        new_LIN, SubjectGenome, ANIb_result =  add_genome(filename,taxonomy,target_filename,scheme_id)
+                        add_genome(filename,taxonomy,target_filename,scheme_id)
                 conn.close()
 
 
