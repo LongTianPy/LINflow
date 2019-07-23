@@ -122,7 +122,7 @@ def get_parsed_args():
     parser.add_argument("workspace", type=str, help="The location of the workspace")
     parser.add_argument("-s", dest="Scheme_ID", help="The Scheme based on which LINs are going to be assigned.", type=int,default=0)
     parser.add_argument("-i", dest="input_dir", help="The directory of genomes going to be added.",default='')
-    parser.add_argument("-m", dest="metadata", default='', help="The metadata corresponding to the genomes. Download the sample in https://bit.ly/2Y6Pw3R, and save as CSV (comma separated version) file.")
+    parser.add_argument("-m", dest="metadata", default='', help="The metadata corresponding to the genomes. Download the sample in https://bit.ly/2Y6Pw3R, and save as CSV (comma separated values) format file.")
     # parser.add_argument("-p", dest="privacy", help="Is it private information")
     args = parser.parse_args()
     return args
@@ -223,7 +223,7 @@ def add_genome(filename, taxonomy, target_filename,scheme_id):
                 os.mkdir(sub_working_dir)
             shutil.copyfile(filename,join(sub_working_dir,"tmp.fasta"))
             shutil.copyfile(subject_genome_file,join(subject_genome_file,"{0}.fasta".format(str(SubjectGenome))))
-            pyani_cmd = "average_nucleotide_identity.py " \
+            pyani_cmd = "python average_nucleotide_identity.py " \
                         "-i {0} -o {1} -m ANIb --nocompress -f".format(sub_working_dir, join(sub_working_dir, 'output'))
             os.system(pyani_cmd)
             ANIb_result = pd.read_table(join(sub_working_dir, "output", "ANIb_percentage_identity.tab"), sep="\t",
@@ -246,7 +246,7 @@ def add_genome(filename, taxonomy, target_filename,scheme_id):
                 shutil.copyfile(filename, join(sub_working_dir, "tmp.fasta"))
                 shutil.copyfile(subject_genome_file,
                                 join(sub_working_dir, "{0}.fasta".format(each_subject_genome_ID)))
-                pyani_cmd = "average_nucleotide_identity.py " \
+                pyani_cmd = "python average_nucleotide_identity.py " \
                             "-i {0} -o {1} -m ANIb --nocompress -f".format(sub_working_dir,
                                                                            join(sub_working_dir, 'output'))
                 os.system(pyani_cmd)
@@ -269,7 +269,7 @@ def add_genome(filename, taxonomy, target_filename,scheme_id):
                 os.mkdir(sub_working_dir)
             shutil.copyfile(filename, join(sub_working_dir, "tmp.fasta"))
             shutil.copyfile(subject_genome_file, join(subject_genome_file, "{0}.fasta".format(str(SubjectGenome))))
-            pyani_cmd = "average_nucleotide_identity.py " \
+            pyani_cmd = "python average_nucleotide_identity.py " \
                         "-i {0} -o {1} -m ANIb --nocompress -f".format(sub_working_dir, join(sub_working_dir, 'output'))
             os.system(pyani_cmd)
             ANIb_result = pd.read_table(join(sub_working_dir, "output", "ANIb_percentage_identity.tab"), sep="\t",
