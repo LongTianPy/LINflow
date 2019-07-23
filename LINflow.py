@@ -396,7 +396,7 @@ if __name__ == '__main__':
                         uuid_filename = str(uuid.uuid4()) + ".fasta"
                         c.execute("insert into Genome (FilePath) values ('{0}')".format(target_filename))
                         conn.commit()
-                        c.execute("insert into Taxonomy (Genome_ID,Genus,Species,Strain) values (1,'{0}','{1}', '{2}')".format(taxonomy['genus'],taxonomy['species'],taxonomy['straom']))
+                        c.execute("insert into Taxonomy (Genome_ID,Genus,Species,Strain) values (1,'{0}','{1}', '{2}')".format(taxonomy['genus'],taxonomy['species'],taxonomy['strain']))
                         conn.commit()
                         c.execute("insert into ANI (Genome_ID, SubjectGenome, ANI) values (1,1,1)")
                         c.execute("insert into LIN (Genome_ID, Scheme_ID, LIN) values (1,1,'{0}')".format(",".join(["0"] * 20)))
