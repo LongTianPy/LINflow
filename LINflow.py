@@ -223,10 +223,10 @@ def add_genome(filename, taxonomy, target_filename,scheme_id):
                 os.mkdir(sub_working_dir)
             shutil.copyfile(filename,join(sub_working_dir,"tmp.fasta"))
             shutil.copyfile(subject_genome_file,join(sub_working_dir,"{0}.fasta".format(str(SubjectGenome))))
-            pyani_cmd = "python average_nucleotide_identity.py " \
+            pyani_cmd = "average_nucleotide_identity.py " \
                         "-i {0} -o {1} -m ANIb --nocompress -f".format(sub_working_dir, join(sub_working_dir, 'output'))
             os.system(pyani_cmd)
-            ANIb_result = pd.read_table(join(sub_working_dir, "output", "ANIb_percentage_identity.tab"), sep="\t",
+            ANIb_result = pd.read_csv(join(sub_working_dir, "output", "ANIb_percentage_identity.tab"), sep="\t",
                                              header=0,
                                              index_col=0).get_value('tmp', str(SubjectGenome))
             shutil.rmtree(sub_working_dir)
@@ -246,11 +246,11 @@ def add_genome(filename, taxonomy, target_filename,scheme_id):
                 shutil.copyfile(filename, join(sub_working_dir, "tmp.fasta"))
                 shutil.copyfile(subject_genome_file,
                                 join(sub_working_dir, "{0}.fasta".format(each_subject_genome_ID)))
-                pyani_cmd = "python average_nucleotide_identity.py " \
+                pyani_cmd = "average_nucleotide_identity.py " \
                             "-i {0} -o {1} -m ANIb --nocompress -f".format(sub_working_dir,
                                                                            join(sub_working_dir, 'output'))
                 os.system(pyani_cmd)
-                this_ANIb_result = pd.read_table(join(sub_working_dir, "output", "ANIb_percentage_identity.tab"),
+                this_ANIb_result = pd.read_csv(join(sub_working_dir, "output", "ANIb_percentage_identity.tab"),
                                                  sep="\t",
                                                  header=0,
                                                  index_col=0).get_value('tmp', str(each_subject_genome_ID))
@@ -269,10 +269,10 @@ def add_genome(filename, taxonomy, target_filename,scheme_id):
                 os.mkdir(sub_working_dir)
             shutil.copyfile(filename, join(sub_working_dir, "tmp.fasta"))
             shutil.copyfile(subject_genome_file, join(sub_working_dir, "{0}.fasta".format(str(SubjectGenome))))
-            pyani_cmd = "python average_nucleotide_identity.py " \
+            pyani_cmd = "average_nucleotide_identity.py " \
                         "-i {0} -o {1} -m ANIb --nocompress -f".format(sub_working_dir, join(sub_working_dir, 'output'))
             os.system(pyani_cmd)
-            ANIb_result = pd.read_table(join(sub_working_dir, "output", "ANIb_percentage_identity.tab"), sep="\t",
+            ANIb_result = pd.read_csv(join(sub_working_dir, "output", "ANIb_percentage_identity.tab"), sep="\t",
                                         header=0,
                                         index_col=0).get_value('tmp', str(SubjectGenome))
             shutil.rmtree(sub_working_dir)
