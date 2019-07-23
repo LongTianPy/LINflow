@@ -118,12 +118,11 @@ def get_parsed_args():
     parser = argparse.ArgumentParser(
         description="LINflow"
     )
-    parser.add_argument("function", type=str, choices=['initiate','show_schemes','add_scheme','add_genomes'], required=True)
-    parser.add_argument("workspace",dest="workspace", help="The location of the workspace",required=True)
+    parser.add_argument("function", type=str, choices=['initiate','show_schemes','add_scheme','add_genomes'])
+    parser.add_argument("workspace", type=str, help="The location of the workspace")
     parser.add_argument("--scheme_id", dest="Scheme_ID", help="The Scheme based on which LINs are going to be assigned.", type=int)
     parser.add_argument("--input_dir", dest="input_dir", help="The directory of genomes going to be added.")
     parser.add_argument("--meta", dest="metadata", help="The metadata corresponding to the genomes. Download the sample in https://bit.ly/2Y6Pw3R, and save as CSV (comma separated version) file.")
-    parser.add_argument("-a", dest="Attributes",help="Attributes")
     # parser.add_argument("-p", dest="privacy", help="Is it private information")
     args = parser.parse_args()
     return args
@@ -135,35 +134,30 @@ def initiate(workspace):
         os.mkdir(workspace)
         os.chdir(workspace)
         conn, c = connect_to_db()
-        c.execute('CREATE TABLE Genome (Genome_ID INT NOT NULL AUTO_INCREMENT,'
-                  'FilePath TEXT NOT NULL,'
-                  'PRIMARY KEY (Genome_ID))')
-        c.execute('CREATE TABLE Scheme (Scheme_ID int NOT NULL AUTO_INCREMENT,'
+        c.execute('CREATE TABLE Genome (Genome_ID INTEGER PRIMARY KEY AUTOINCREMENT,'
+                  'FilePath TEXT NOT NULL)')
+        c.execute('CREATE TABLE Scheme (Scheme_ID INTEGER PRIMARY KEY AUTOINCREMENT,'
                   'Cutoff text(255) NOT NULL,'
                   'LabelNum int NOT NULL,'
-                  'Description TEXT,'
-                  'PRIMARY KEY (Scheme_ID))')
-        c.execute('CREATE TABLE ANI (ANI_ID INT NOT NULL AUTO_INCREMENT,'
+                  'Description TEXT)')
+        c.execute('CREATE TABLE ANI (ANI_ID INTEGER PRIMARY KEY AUTOINCREMENT,'
                   'Genome_ID INT NOT NULL,'
                   'SubjectGenome_ID INT NOT NULL,'
-                  'ANI DOUBLE NOT NULL,'
-                  'PRIMARY KEY (ANI_ID))')
-        c.execute('CREATE TABLE LIN (LIN_ID INT NOT NULL AUTO_INCREMENT,'
+                  'ANI DOUBLE NOT NULL)')
+        c.execute('CREATE TABLE LIN (LIN_ID INTEGER PRIMARY KEY AUTOINCREMENT,'
                   'Genome_ID INT NOT NULL,'
                   'Scheme_ID INT NOT NULL,'
-                  'LIN TEXT NOT NULL,'
-                  'PRIMARY KEY (LIN_ID))')
-        c.execute('CREATE TABLE Taxonomy (Taxonomy_ID INT NOT NULL AUTO_INCREMENT,'
+                  'LIN TEXT NOT NULL)')
+        c.execute('CREATE TABLE Taxonomy (Taxonomy_ID INTEGER PRIMARY KEY AUTOINCREMENT,'
                   'Genome_ID INT NOT NULL,'
                   'Genus TEXT NOT NULL,'
                   'Species TEXT NOT NULL,'
-                  'Strain TEXT NOT NULL,'
-                  'PRIMARY KEY (Taxonomy_ID))')
+                  'Strain TEXT NOT NULL)')
         c.execute(
                 "INSERT INTO Scheme (Cutoff, LabelNum, Description) values ('70,75,80,85,90,95,96,97,98,98.5,99,99.25,99.5,99.75,99.9,99.925,99.95,99.975,99.99,99.999', 20, 'The default scheme of LINbase.org')")
         conn.commit()
         fine_scheme = ','.join([str(i/float(10)) for i in range(700,1000,1)])
-        c.execute("INSERT INTO Scheme (Cutoff, LabelNum) VALUES (?,300,'A scheme used to approximate the tree')",fine_scheme)
+        c.execute("INSERT INTO Scheme (Cutoff, LabelNum, Description) VALUES ('{}',300,'A scheme used to approximate the tree')".format(fine_scheme))
         conn.commit()
         conn.close()
         os.mkdir('Genomes')
