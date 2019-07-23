@@ -118,7 +118,7 @@ def get_parsed_args():
     parser = argparse.ArgumentParser(
         description="LINflow"
     )
-    parser.add_argument("function", type=str, choices=['initiate','show_schemes','add_scheme','add_genomes'], required=True, dest='function')
+    parser.add_argument("function", type=str, choices=['initiate','show_schemes','add_scheme','add_genomes'], required=True)
     parser.add_argument("workspace",dest="workspace", help="The location of the workspace",required=True)
     parser.add_argument("--scheme_id", dest="Scheme_ID", help="The Scheme based on which LINs are going to be assigned.", type=int)
     parser.add_argument("--input_dir", dest="input_dir", help="The directory of genomes going to be added.")
