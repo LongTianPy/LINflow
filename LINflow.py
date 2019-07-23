@@ -68,7 +68,7 @@ class Assign_LIN(object):
         self.idx_to_change = getLIN_object.idx_to_change
         self.conserved_LIN = ','.join(getLIN_object.conserved_LIN)
         self.label_num = getLIN_object.label_num
-        self.scheme_id = getLIN_object.scheme_ID
+        self.scheme_id = getLIN_object.Scheme_ID
         self.c=c
         self.assign()
     def assign(self, idx_to_change=None, conserved_LIN=None, label_num=None,c=None,scheme_id=None):
@@ -228,7 +228,7 @@ def add_genome(filename, taxonomy, target_filename,scheme_id):
             os.system(pyani_cmd)
             ANIb_result = pd.read_csv(join(sub_working_dir, "output", "ANIb_percentage_identity.tab"), sep="\t",
                                              header=0,
-                                             index_col=0).get_value('tmp', str(SubjectGenome))
+                                             index_col=0).loc['tmp', str(SubjectGenome)]
             shutil.rmtree(sub_working_dir)
             new_LIN_object = getLIN(Genome_ID=SubjectGenome, Scheme_ID=scheme_id, similarity=ANIb_result,c=c)
             new_LIN = Assign_LIN(getLIN_object=new_LIN_object,c=c).new_LIN
@@ -253,7 +253,7 @@ def add_genome(filename, taxonomy, target_filename,scheme_id):
                 this_ANIb_result = pd.read_csv(join(sub_working_dir, "output", "ANIb_percentage_identity.tab"),
                                                  sep="\t",
                                                  header=0,
-                                                 index_col=0).get_value('tmp', str(each_subject_genome_ID))
+                                                 index_col=0).loc['tmp', str(each_subject_genome_ID)]
                 shutil.rmtree(sub_working_dir)
                 if this_ANIb_result > ANIb_result:
                     ANIb_result = this_ANIb_result
@@ -274,7 +274,7 @@ def add_genome(filename, taxonomy, target_filename,scheme_id):
             os.system(pyani_cmd)
             ANIb_result = pd.read_csv(join(sub_working_dir, "output", "ANIb_percentage_identity.tab"), sep="\t",
                                         header=0,
-                                        index_col=0).get_value('tmp', str(SubjectGenome))
+                                        index_col=0).loc['tmp', str(SubjectGenome)]
             shutil.rmtree(sub_working_dir)
             new_LIN_object = getLIN(Genome_ID=SubjectGenome, Scheme_ID=scheme_id, similarity=ANIb_result, c=c)
             new_LIN = Assign_LIN(getLIN_object=new_LIN_object, c=c).new_LIN
