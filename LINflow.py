@@ -362,11 +362,11 @@ if __name__ == '__main__':
                     sys.exit()
                 else:
                     input_dir = args.input_dir
-                if args.meta == '':
+                if args.metadata == '':
                     print("Please provide the metadata file with -m")
                     sys.exit()
                 else:
-                    meta = args.meta
+                    meta = args.metadata
                 if args.Scheme_ID == 0:
                     print("Please select one Scheme_ID with -s")
                     sys.exit()
