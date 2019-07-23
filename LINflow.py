@@ -199,7 +199,7 @@ def parse_result(result_file):
 
 def add_genome(filename, taxonomy, target_filename,scheme_id):
     tmp_sig = create_sketch(filename,join(tmp_sig_dir,"tmp.sig"))
-    result_file = compare_sketch(tmp_sig, "rep_bac")
+    result_file = compare_sketch(tmp_sig, "rep_bac",'21')
     df = parse_result(result_file)
     if df.empty:
         new_LIN_object = getLIN(Genome_ID=1, Scheme_ID=scheme_id,similarity=0.6,c=c)
