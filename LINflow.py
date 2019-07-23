@@ -86,7 +86,7 @@ class Assign_LIN(object):
             c.execute("SELECT LIN.LIN FROM LIN where Scheme_ID=4")
             tmp = c.fetchall()
         else:
-            sql="SELECT LIN.LIN from LIN WHERE LIN.LIN LIKE '{0}%' and Scheme_ID={1}}".format(conserved_LIN,scheme_id)
+            sql="SELECT LIN.LIN from LIN WHERE LIN.LIN LIKE '{0}%' and Scheme_ID={1}".format(conserved_LIN,scheme_id)
             # print sql
             c.execute(sql)
             tmp = c.fetchall()
@@ -313,7 +313,7 @@ def add_genome(filename, taxonomy, target_filename,scheme_id):
     if not isdir(join(sourmash_dir,lingroup)):
         os.mkdir(join(sourmash_dir,lingroup))
         create_sketch(filename, join(rep_bac_dir,"{0}.sig".format(str(genome_id))))
-    create_sketch(filename,join(sourmash_dir,lingroup,"{0}.sig".format(str(genome_id))))
+    create_sketch(join(rep_bac_dir,"{0}.sig".format(str(genome_id))),join(sourmash_dir,lingroup,"{0}.sig".format(str(genome_id))))
     shutil.copy(filename, target_filename)
 
 
@@ -403,7 +403,7 @@ if __name__ == '__main__':
                         c.execute("insert into LIN (Genome_ID,Scheme_ID,LIN) values (1,2,'{0}')".format(",".join(["0"] * 300)))
                         os.mkdir(join(sourmash_dir,"0,0,0,0,0,0"))
                         create_sketch(filename,join(sourmash_dir,"0,0,0,0,0,0","1.sig"))
-                        create_sketch(filename,join(rep_bac_dir, "1.sig"))
+                        shutil.copyfile(join(sourmash_dir,"0,0,0,0,0,0","1.sig"),join(rep_bac_dir, "1.sig"))
                         shutil.copy(filename, target_filename)
                     else:
                         new_LIN, SubjectGenome, ANIb_result =  add_genome(filename,taxonomy,target_filename,scheme_id)
