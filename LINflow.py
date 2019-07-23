@@ -109,7 +109,7 @@ class Assign_LIN(object):
 
 
 # FUNCTIONS
-def connect_to_db('LINbase.db'):
+def connect_to_db():
     conn = sqlite3.connect('LINbase.db')
     c = conn.cursor()
     return conn, c
@@ -120,7 +120,7 @@ def get_parsed_args():
     )
     parser.add_argument("function", type=str, choices=['initiate','show_schemes','add_scheme','add_genomes'], required=True, dest='function')
     parser.add_argument("workspace",dest="workspace", help="The location of the workspace",required=True)
-    parser.add_argument("--scheme_id", dest="Scheme_ID", help="The Scheme based on which LINs are going to be assigned.")
+    parser.add_argument("--scheme_id", dest="Scheme_ID", help="The Scheme based on which LINs are going to be assigned.", type=int)
     parser.add_argument("--input_dir", dest="input_dir", help="The directory of genomes going to be added.")
     parser.add_argument("--meta", dest="metadata", help="The metadata corresponding to the genomes. Download the sample in https://bit.ly/2Y6Pw3R, and save as CSV (comma separated version) file.")
     parser.add_argument("-a", dest="Attributes",help="Attributes")
@@ -208,7 +208,7 @@ def add_genome(filename, taxonomy, target_filename,scheme_id):
     result_file = compare_sketch(tmp_sig, "rep_bac")
     df = parse_result(result_file)
     if df.empty:
-        new_LIN_object = getLIN(Genome_ID=1, Scheme_ID=1,similarity=0.6,c=c)
+        new_LIN_object = getLIN(Genome_ID=1, Scheme_ID=scheme_id,similarity=0.6,c=c)
         new_LIN = Assign_LIN(getLIN_object=new_LIN_object, c=c).new_LIN
         ANIb_result = 0.6
         SubjectGenome=1
@@ -284,7 +284,43 @@ def add_genome(filename, taxonomy, target_filename,scheme_id):
             shutil.rmtree(sub_working_dir)
             new_LIN_object = getLIN(Genome_ID=SubjectGenome, Scheme_ID=scheme_id, similarity=ANIb_result, c=c)
             new_LIN = Assign_LIN(getLIN_object=new_LIN_object, c=c).new_LIN
-        return new_LIN, SubjectGenome, ANIb_result
+    c.execute("INSERT INTO Genome (FilePath) VALUES ('{0}')".format(target_filename))
+    conn.commit()
+    c.execute("SELECT Genome_ID FROM Genome WHERE FilePath='{0}'".format(target_filename))
+    genome_id = c.fetchone()[0]
+    c.execute("INSERT INTO ANI (Genome_ID,SubjectGenome,ANI) VALUES ({0},{1},{2})".format(genome_id,SubjectGenome,ANIb_result))
+    conn.commit()
+    c.execute("INSERT INTO Taxonomy (Genome_ID, Genus, Species, Strain) VALUES ({0},'{1}','{2}','{3}')".format(genome_id,taxonomy['genus'],taxonomy['species'],taxonomy['strain']))
+    conn.commit()
+    c.execute("INSERT INTO LIN (Genome_ID,Scheme_ID,LIN) VALUES ({0},{1},'{2}')".format(genome_id,scheme_id,new_LIN))
+    conn.commit()
+    if scheme_id not in [1,2]:
+        new_LIN_object_1 = getLIN(Genome_ID=SubjectGenome,Scheme_ID=1,similarity=ANIb_result,c=c)
+        new_LIN_1 = Assign_LIN(getLIN_object=new_LIN_object_1,c=c).new_LIN
+        c.execute(
+            "INSERT INTO LIN (Genome_ID,Scheme_ID,LIN) VALUES ({0},{1},'{2}')".format(genome_id, 1, new_LIN_1))
+        conn.commit()
+        new_LIN_object_2 = getLIN(Genome_ID=SubjectGenome, Scheme_ID=2, similarity=ANIb_result, c=c)
+        new_LIN_2 = Assign_LIN(getLIN_object=new_LIN_object_2, c=c).new_LIN
+        c.execute(
+                "INSERT INTO LIN (Genome_ID,Scheme_ID,LIN) VALUES ({0},{1},'{2}')".format(genome_id, 2, new_LIN_2))
+        conn.commit()
+    else:
+        the_other_scheme_id = 3-scheme_id
+        new_LIN_object_other = getLIN(Genome_ID=SubjectGenome, Scheme_ID=the_other_scheme_id, similarity=ANIb_result, c=c)
+        new_LIN_other = Assign_LIN(getLIN_object=new_LIN_object_other, c=c).new_LIN
+        c.execute(
+                "INSERT INTO LIN (Genome_ID,Scheme_ID,LIN) VALUES ({0},{1},'{2}')".format(genome_id, the_other_scheme_id, new_LIN_other))
+        conn.commit()
+    # Update signature
+    c.execute("SELECT LIN FROM LIN WHERE Genome_ID={0} and Scheme_ID=1".format(genome_id))
+    LIN_1 = c.fetchone()[0]
+    lingroup = ",".join(LIN_1.split(",")[:6])
+    if not isdir(join(sourmash_dir,lingroup)):
+        os.mkdir(join(sourmash_dir,lingroup))
+        create_sketch(filename, join(rep_bac_dir,"{0}.sig".format(str(genome_id))))
+    create_sketch(filename,join(sourmash_dir,lingroup,"{0}.sig".format(str(genome_id))))
+    shutil.copy(filename, target_filename)
 
 
 # MAIN
@@ -377,6 +413,8 @@ if __name__ == '__main__':
                         shutil.copy(filename, target_filename)
                     else:
                         new_LIN, SubjectGenome, ANIb_result =  add_genome(filename,taxonomy,target_filename,scheme_id)
+                conn.close()
+
 
 
 
