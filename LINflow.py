@@ -120,9 +120,9 @@ def get_parsed_args():
     )
     parser.add_argument("function", type=str, choices=['initiate','show_schemes','add_scheme','add_genomes'])
     parser.add_argument("workspace", type=str, help="The location of the workspace")
-    parser.add_argument("--scheme_id", dest="Scheme_ID", help="The Scheme based on which LINs are going to be assigned.", type=int)
-    parser.add_argument("--input_dir", dest="input_dir", help="The directory of genomes going to be added.")
-    parser.add_argument("--meta", dest="metadata", help="The metadata corresponding to the genomes. Download the sample in https://bit.ly/2Y6Pw3R, and save as CSV (comma separated version) file.")
+    parser.add_argument("-s", dest="Scheme_ID", help="The Scheme based on which LINs are going to be assigned.", type=int,default=0)
+    parser.add_argument("-i", dest="input_dir", help="The directory of genomes going to be added.",default='')
+    parser.add_argument("-m", dest="metadata", default='', help="The metadata corresponding to the genomes. Download the sample in https://bit.ly/2Y6Pw3R, and save as CSV (comma separated version) file.")
     # parser.add_argument("-p", dest="privacy", help="Is it private information")
     args = parser.parse_args()
     return args
@@ -339,9 +339,9 @@ if __name__ == '__main__':
             if method == 'show_schemes':
                 os.chdir(workspace)
                 conn,c=connect_to_db()
-                c.execute('SELECT Genome_ID,Cutoff,Description FROM Scheme')
+                c.execute('SELECT Scheme_ID,Cutoff,Description FROM Scheme')
                 tmp = c.fetchall()
-                print('Genome_ID\tDescription\tScheme')
+                print('Scheme_ID\tDescription\tScheme')
                 for i in tmp:
                  print('{0}\t{1}\t{2}'.format(i[0],i[2],i[1]))
                 conn.close()
@@ -353,25 +353,25 @@ if __name__ == '__main__':
                 description = input("Please enter a short description (optional):")
                 c.execute("INSERT INTO Scheme (Cutoff,LabelNum,Description) VALUES ('{0}',{1},'{2}')".format(scheme,num,description))
                 conn.commit()
-                c.execute("SELECT Genome_ID,Description,Cutoff FROM Scheme WHERE Scheme_ID=(SELECT max(Scheme_ID) from Scheme)")
+                c.execute("SELECT Scheme_ID,Description,Cutoff FROM Scheme WHERE Scheme_ID=(SELECT max(Scheme_ID) from Scheme)")
                 tmp = c.fetchone()
                 print('{0}\t{1}\t{2}'.format(tmp[0],tmp[1],tmp[2]))
             elif method == 'add_genomes':
-                if argv.input_dir is None:
-                    print("Please provide a directory with genomes to be added.")
+                if args.input_dir == '':
+                    print("Please provide a directory with genomes to be added with -i")
                     sys.exit()
                 else:
-                    input_dir = argv.input_dir
-                if argv.meta is None:
-                    print("Please provide the metadata file.")
+                    input_dir = args.input_dir
+                if args.meta == '':
+                    print("Please provide the metadata file with -m")
                     sys.exit()
                 else:
-                    meta = argv.meta
-                if argv.Scheme_ID is None:
-                    print("Please select one Scheme_ID")
+                    meta = args.meta
+                if args.Scheme_ID == 0:
+                    print("Please select one Scheme_ID with -s")
                     sys.exit()
                 else:
-                    scheme_id = argv.Scheme_ID
+                    scheme_id = args.Scheme_ID
                 df = pd.read_csv(meta,sep=",",header=0,index_col=0)
                 if not find_executable("sourmash"):
                     print("Please install sourmash first")
