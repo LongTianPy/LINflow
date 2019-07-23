@@ -313,7 +313,9 @@ def add_genome(filename, taxonomy, target_filename,scheme_id):
     if not isdir(join(sourmash_dir,lingroup)):
         os.mkdir(join(sourmash_dir,lingroup))
         create_sketch(filename, join(rep_bac_dir,"{0}.sig".format(str(genome_id))))
-    create_sketch(join(rep_bac_dir,"{0}.sig".format(str(genome_id))),join(sourmash_dir,lingroup,"{0}.sig".format(str(genome_id))))
+        shutil.copyfile(join(rep_bac_dir,"{0}.sig".format(str(genome_id))),join(sourmash_dir,lingroup,"{0}.sig".format(str(genome_id))))
+    else:
+        create_sketch(filename, join(sourmash_dir,lingroup,"{0}.sig".format(str(genome_id))))
     shutil.copy(filename, target_filename)
 
 
