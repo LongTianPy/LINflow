@@ -142,7 +142,7 @@ def initiate(workspace):
                   'Description TEXT)')
         c.execute('CREATE TABLE ANI (ANI_ID INTEGER PRIMARY KEY AUTOINCREMENT,'
                   'Genome_ID INT NOT NULL,'
-                  'SubjectGenome_ID INT NOT NULL,'
+                  'SubjectGenome INT NOT NULL,'
                   'ANI DOUBLE NOT NULL)')
         c.execute('CREATE TABLE LIN (LIN_ID INTEGER PRIMARY KEY AUTOINCREMENT,'
                   'Genome_ID INT NOT NULL,'
