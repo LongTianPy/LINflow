@@ -222,7 +222,7 @@ def add_genome(filename, taxonomy, target_filename,scheme_id):
             if not isdir(sub_working_dir):
                 os.mkdir(sub_working_dir)
             shutil.copyfile(filename,join(sub_working_dir,"tmp.fasta"))
-            shutil.copyfile(subject_genome_file,join(subject_genome_file,"{0}.fasta".format(str(SubjectGenome))))
+            shutil.copyfile(subject_genome_file,join(sub_working_dir,"{0}.fasta".format(str(SubjectGenome))))
             pyani_cmd = "python average_nucleotide_identity.py " \
                         "-i {0} -o {1} -m ANIb --nocompress -f".format(sub_working_dir, join(sub_working_dir, 'output'))
             os.system(pyani_cmd)
@@ -268,7 +268,7 @@ def add_genome(filename, taxonomy, target_filename,scheme_id):
             if not isdir(sub_working_dir):
                 os.mkdir(sub_working_dir)
             shutil.copyfile(filename, join(sub_working_dir, "tmp.fasta"))
-            shutil.copyfile(subject_genome_file, join(subject_genome_file, "{0}.fasta".format(str(SubjectGenome))))
+            shutil.copyfile(subject_genome_file, join(sub_working_dir, "{0}.fasta".format(str(SubjectGenome))))
             pyani_cmd = "python average_nucleotide_identity.py " \
                         "-i {0} -o {1} -m ANIb --nocompress -f".format(sub_working_dir, join(sub_working_dir, 'output'))
             os.system(pyani_cmd)
