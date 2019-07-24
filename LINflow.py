@@ -83,7 +83,7 @@ class Assign_LIN(object):
         if not scheme_id:
             scheme_id = self.scheme_id
         if conserved_LIN == '':
-            c.execute("SELECT LIN.LIN FROM LIN where Scheme_ID=4")
+            c.execute("SELECT LIN.LIN FROM LIN where Scheme_ID={0}".format(scheme_id))
             tmp = c.fetchall()
         else:
             sql="SELECT LIN.LIN from LIN WHERE LIN.LIN LIKE '{0}%' and Scheme_ID={1}".format(conserved_LIN,scheme_id)
