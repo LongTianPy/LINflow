@@ -254,7 +254,7 @@ def add_genome(filename, taxonomy, target_filename,scheme_id):
                                                  sep="\t",
                                                  header=0,
                                                  index_col=0).loc['tmp', str(each_subject_genome_ID)]
-                shutil.rmtree(sub_working_dir)
+                # shutil.rmtree(sub_working_dir)
                 if this_ANIb_result > ANIb_result:
                     ANIb_result = this_ANIb_result
                     SubjectGenome = int(each_subject_genome_ID)
