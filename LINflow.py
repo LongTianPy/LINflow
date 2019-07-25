@@ -257,7 +257,7 @@ def add_genome(filename, taxonomy, target_filename,scheme_id):
                 shutil.rmtree(sub_working_dir)
                 if this_ANIb_result > ANIb_result:
                     ANIb_result = this_ANIb_result
-                    SubjectGenome = each_subject_genome_ID
+                    SubjectGenome = int(each_subject_genome_ID)
             new_LIN_object = getLIN(Genome_ID=SubjectGenome, Scheme_ID=scheme_id, similarity=ANIb_result, c=c)
             new_LIN = Assign_LIN(getLIN_object=new_LIN_object, c=c).new_LIN
         else:
