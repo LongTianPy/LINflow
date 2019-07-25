@@ -241,11 +241,11 @@ def add_genome(filename, taxonomy, target_filename,scheme_id):
                 sub_working_dir = ani_dir + str(uuid.uuid4()) + "/"
                 if not isdir(sub_working_dir):
                     os.mkdir(sub_working_dir)
-                c.execute("select FilePath from Genome where Genome_ID={0}".format(each_subject_genome_ID))
+                c.execute("select FilePath from Genome where Genome_ID={0}".format(int(each_subject_genome_ID)))
                 subject_genome_file = c.fetchone()[0]
                 shutil.copyfile(filename, join(sub_working_dir, "tmp.fasta"))
                 shutil.copyfile(subject_genome_file,
-                                join(sub_working_dir, "{0}.fasta".format(each_subject_genome_ID)))
+                                join(sub_working_dir, "{0}.fasta".format(str(each_subject_genome_ID))))
                 pyani_cmd = "average_nucleotide_identity.py " \
                             "-i {0} -o {1} -m ANIb --nocompress -f".format(sub_working_dir,
                                                                            join(sub_working_dir, 'output'))
