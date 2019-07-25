@@ -238,7 +238,7 @@ def add_genome(filename, taxonomy, target_filename,scheme_id):
             ANIb_result = 0
             SubjectGenome = 0
             for each_subject_genome_ID in df.index[:3]:
-                sub_working_dir = ani_dir + str(uuid.uuid4()) + "/"
+                sub_working_dir = join(ani_dir, str(uuid.uuid4()))
                 if not isdir(sub_working_dir):
                     os.mkdir(sub_working_dir)
                 c.execute("select FilePath from Genome where Genome_ID={0}".format(int(each_subject_genome_ID)))
@@ -254,7 +254,7 @@ def add_genome(filename, taxonomy, target_filename,scheme_id):
                                                  sep="\t",
                                                  header=0,
                                                  index_col=0).loc['tmp', str(each_subject_genome_ID)]
-                # shutil.rmtree(sub_working_dir)
+                shutil.rmtree(sub_working_dir)
                 if this_ANIb_result > ANIb_result:
                     ANIb_result = this_ANIb_result
                     SubjectGenome = int(each_subject_genome_ID)
