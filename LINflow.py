@@ -180,8 +180,8 @@ def compare_sketch(query,LINgroup,k):
     else:
         dest = join(sourmash_dir, LINgroup)
     folder_size = len([file for file in os.listdir(dest) if isfile(join(dest,file))])
-    cmd = "sourmash search {0} {1} -n {2} -k 21 -q --threshold 0.0001 -o {3}"
-    cmd = cmd.format(query, join(dest,'*.sig'), folder_size, join(sourmash_result,"tmp_result.txt"))
+    cmd = "sourmash search {0} {1} -n {2} -k {4} -q --threshold 0.0001 -o {3}"
+    cmd = cmd.format(query, join(dest,'*.sig'), folder_size, join(sourmash_result,"tmp_result.txt"),k)
     os.system(cmd)
     return join(sourmash_result,"tmp_result.txt")
 
