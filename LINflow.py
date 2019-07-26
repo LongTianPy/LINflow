@@ -197,6 +197,29 @@ def parse_result(result_file):
         df.index = ids
         return df
 
+
+def add_first_genome(filename, target_filename, taxonomy, scheme_id):
+    c.execute("insert into Genome (FilePath) values ('{0}')".format(target_filename))
+    conn.commit()
+    c.execute(
+        "insert into Taxonomy (Genome_ID,Genus,Species,Strain) values (1,'{0}','{1}', '{2}')".format(
+            taxonomy['genus'], taxonomy['species'], taxonomy['strain']))
+    conn.commit()
+    c.execute("insert into ANI (Genome_ID, SubjectGenome, ANI) values (1,1,1)")
+    c.execute("insert into LIN (Genome_ID, Scheme_ID, LIN) values (1,1,'{0}')".format(
+        ",".join(["0"] * 20)))
+    c.execute("insert into LIN (Genome_ID,Scheme_ID,LIN) values (1,2,'{0}')".format(
+        ",".join(["0"] * 300)))
+    if scheme_id not in [1, 2]:
+        c.execute("select LabelNum FROM Scheme where Scheme_ID={0}".format(scheme_id))
+        num = int(c.fetchone()[0])
+        c.execute("insert into LIN (Genome_ID,Scheme_ID,LIN) values (1,{1}},'{0}')".format(
+            ",".join(["0"] * num)),scheme_id)
+    os.mkdir(join(sourmash_dir, "0,0,0,0,0,0"))
+    create_sketch(filename, join(sourmash_dir, "0,0,0,0,0,0", "1.sig"))
+    shutil.copyfile(join(sourmash_dir, "0,0,0,0,0,0", "1.sig"), join(rep_bac_dir, "1.sig"))
+    shutil.copy(filename, target_filename)
+
 def add_genome(filename, taxonomy, target_filename,scheme_id):
     tmp_sig = create_sketch(filename,join(tmp_sig_dir,"tmp.sig"))
     result_file = compare_sketch(tmp_sig, "rep_bac",'21')
@@ -318,6 +341,53 @@ def add_genome(filename, taxonomy, target_filename,scheme_id):
         create_sketch(filename, join(sourmash_dir,lingroup,"{0}.sig".format(str(genome_id))))
     shutil.copy(filename, target_filename)
 
+def show_schemes(workspace):
+    os.chdir(workspace)
+    conn, c = connect_to_db()
+    c.execute('SELECT Scheme_ID,Cutoff,Description FROM Scheme')
+    tmp = c.fetchall()
+    print('Scheme_ID\tDescription\tScheme')
+    for i in tmp:
+        print('{0}\t{1}\t{2}'.format(i[0], i[2], i[1]))
+    conn.close()
+
+def add_scheme(workspace):
+    os.chdir(workspace)
+    conn, c = connect_to_db()
+    scheme = input(
+        "Please enter a new scheme delimited by comma (,) without the percentage mark and do not include 100 at the end, e.g. 70,80,90,99: ")
+    num = len(scheme.split(","))
+    description = input("Please enter a short description (optional):")
+    c.execute(
+        "INSERT INTO Scheme (Cutoff,LabelNum,Description) VALUES ('{0}',{1},'{2}')".format(scheme, num, description))
+    conn.commit()
+    c.execute("SELECT Scheme_ID,Description,Cutoff FROM Scheme WHERE Scheme_ID=(SELECT max(Scheme_ID) from Scheme)")
+    tmp = c.fetchone()
+    print('{0}\t{1}\t{2}'.format(tmp[0], tmp[1], tmp[2]))
+
+def check_arguments(args):
+    if args.input_dir == '':
+        print("Please provide a directory with genomes to be added with -i")
+        sys.exit()
+    else:
+        input_dir = args.input_dir
+    if args.metadata == '':
+        print("Please provide the metadata file with -m")
+        sys.exit()
+    else:
+        meta = args.metadata
+    if args.Scheme_ID == 0:
+        print("Please select one Scheme_ID with -s")
+        sys.exit()
+    else:
+        scheme_id = args.Scheme_ID
+    if not find_executable("sourmash"):
+        print("Please install sourmash first")
+        sys.exit()
+    if not find_executable("average_nucleotide_identity.py"):
+        print("Please install pyani first")
+        sys.exit()
+    return input_dir, meta, scheme_id
 
 # MAIN
 if __name__ == '__main__':
@@ -339,48 +409,12 @@ if __name__ == '__main__':
             tmp_sig_dir = join(workspace, "Signatures", "tmp_sig")
             sourmash_result = join(workspace, "Signatures", "tmp_result")
             if method == 'show_schemes':
-                os.chdir(workspace)
-                conn,c=connect_to_db()
-                c.execute('SELECT Scheme_ID,Cutoff,Description FROM Scheme')
-                tmp = c.fetchall()
-                print('Scheme_ID\tDescription\tScheme')
-                for i in tmp:
-                 print('{0}\t{1}\t{2}'.format(i[0],i[2],i[1]))
-                conn.close()
+                show_schemes(workspace)
             elif method == 'add_scheme':
-                os.chdir(workspace)
-                conn,c=connect_to_db()
-                scheme = input("Please enter a new scheme delimited by comma (,) without the percentage mark and do not include 100 at the end, e.g. 70,80,90,99: ")
-                num = len(scheme.split(","))
-                description = input("Please enter a short description (optional):")
-                c.execute("INSERT INTO Scheme (Cutoff,LabelNum,Description) VALUES ('{0}',{1},'{2}')".format(scheme,num,description))
-                conn.commit()
-                c.execute("SELECT Scheme_ID,Description,Cutoff FROM Scheme WHERE Scheme_ID=(SELECT max(Scheme_ID) from Scheme)")
-                tmp = c.fetchone()
-                print('{0}\t{1}\t{2}'.format(tmp[0],tmp[1],tmp[2]))
+                add_scheme(workspace)
             elif method == 'add_genomes':
-                if args.input_dir == '':
-                    print("Please provide a directory with genomes to be added with -i")
-                    sys.exit()
-                else:
-                    input_dir = args.input_dir
-                if args.metadata == '':
-                    print("Please provide the metadata file with -m")
-                    sys.exit()
-                else:
-                    meta = args.metadata
-                if args.Scheme_ID == 0:
-                    print("Please select one Scheme_ID with -s")
-                    sys.exit()
-                else:
-                    scheme_id = args.Scheme_ID
-                df = pd.read_csv(meta,sep=",",header=0,index_col=0)
-                if not find_executable("sourmash"):
-                    print("Please install sourmash first")
-                    sys.exit()
-                if not find_executable("average_nucleotide_identity.py"):
-                    print("Please install pyani first")
-                    sys.exit()
+                input_dir, meta, scheme_id = check_arguments(args)
+                df = pd.read_csv(meta, sep=",", header=0, index_col=0)
                 os.chdir(workspace)
                 conn, c = connect_to_db()
                 for i in df.index:
@@ -394,19 +428,7 @@ if __name__ == '__main__':
                     c.execute("select count(Genome_ID) from Genome")
                     size = c.fetchone()[0]
                     if size == 0:
-                        genome_id = 1
-                        uuid_filename = str(uuid.uuid4()) + ".fasta"
-                        c.execute("insert into Genome (FilePath) values ('{0}')".format(target_filename))
-                        conn.commit()
-                        c.execute("insert into Taxonomy (Genome_ID,Genus,Species,Strain) values (1,'{0}','{1}', '{2}')".format(taxonomy['genus'],taxonomy['species'],taxonomy['strain']))
-                        conn.commit()
-                        c.execute("insert into ANI (Genome_ID, SubjectGenome, ANI) values (1,1,1)")
-                        c.execute("insert into LIN (Genome_ID, Scheme_ID, LIN) values (1,1,'{0}')".format(",".join(["0"] * 20)))
-                        c.execute("insert into LIN (Genome_ID,Scheme_ID,LIN) values (1,2,'{0}')".format(",".join(["0"] * 300)))
-                        os.mkdir(join(sourmash_dir,"0,0,0,0,0,0"))
-                        create_sketch(filename,join(sourmash_dir,"0,0,0,0,0,0","1.sig"))
-                        shutil.copyfile(join(sourmash_dir,"0,0,0,0,0,0","1.sig"),join(rep_bac_dir, "1.sig"))
-                        shutil.copy(filename, target_filename)
+                        add_first_genome(filename,target_filename,taxonomy,scheme_id)
                     else:
                         add_genome(filename,taxonomy,target_filename,scheme_id)
                 conn.close()
