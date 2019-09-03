@@ -118,11 +118,13 @@ def get_parsed_args():
     parser = argparse.ArgumentParser(
         description="LINflow"
     )
-    parser.add_argument("function", type=str, choices=['initiate','show_schemes','add_scheme','add_genomes'])
+    parser.add_argument("function", type=str, choices=['initiate','show_schemes','add_scheme','add_genomes','infer_distance'])
     parser.add_argument("workspace", type=str, help="The location of the workspace")
     parser.add_argument("-s", dest="Scheme_ID", help="The Scheme based on which LINs are going to be assigned.", type=int,default=0)
     parser.add_argument("-i", dest="input_dir", help="The directory of genomes going to be added.",default='')
     parser.add_argument("-m", dest="metadata", default='', help="The metadata corresponding to the genomes. Download the sample in https://bit.ly/2Y6Pw3R, and save as CSV (comma separated values) format file.")
+    parser.add_argument("-d", dest="df",default='',help="The file name of the ANI matrix.")
+    parser.add_argument("-l", dest='lingroup',default='', help="The LINgroup of genomes to show distance. Default: '', to see all.")
     # parser.add_argument("-p", dest="privacy", help="Is it private information")
     args = parser.parse_args()
     return args
@@ -432,6 +434,50 @@ if __name__ == '__main__':
                     else:
                         add_genome(filename,taxonomy,target_filename,scheme_id)
                 conn.close()
+            elif method == 'infer_distance':
+                if args.df == '':
+                    print("Please provide the name of the output distance matrix.")
+                    sys.exit()
+                else:
+                    df = args.df
+                    lingroup = args.lingroup
+                    os.chdir(workspace)
+                    conn, c = connect_to_db()
+                    c.execute("SELECT Cutoff FROM Scheme WHERE Scheme_ID=2")
+                    scheme = c.fetchone()[0].split(',')
+                    scheme = [float(i)/100 for i in scheme]
+                    if lingroup != '':
+                        c.execute("SELECT LIN.Genome_ID,Taxonomy.Genus,Taxonomy.Species, Taxonomy.Strain,LIN.LIN "
+                                  "FROM LIN,Taxonomy,Genome "
+                                  "WHERE LIN.Genome_ID=Taxonomy.Genome_ID AND Genome.Genome_ID=LIN.Genome_ID AND "
+                                  "LIN.Genome_ID IN (SELECT Genome_ID FROM LIN WHERE LIN LIKE ',%') AND "
+                                  "AND LIN.Scheme_ID=2".format(lingroup))
+                    else:
+                        c.execute("SELECT LIN.Genome_ID,Taxonomy.Genus,Taxonomy.Species, Taxonomy.Strain,LIN.LIN "
+                                  "FROM LIN,Taxonomy,Genome "
+                                  "WHERE LIN.Genome_ID=Taxonomy.Genome_ID AND Genome.Genome_ID=LIN.Genome_ID AND "
+                                  "LIN.Scheme_ID=2".format(lingroup))
+                    tmp = c.fetchall()
+                    names = [" ".join(i[1:4]) for i in tmp]
+                    dm = pd.DataFrame(0,columns=names,index=names)
+                    for i in range(len(names)):
+                        for j in range(len(names)):
+                            idx = names[i]
+                            col = names[j]
+                            if i == j:
+                                dm.loc[idx,col] = 1
+                            else:
+                                lin_idx = tmp[i][4].split(',')
+                                lin_col = tmp[j][4].split(',')
+                                if lin_idx[0] != lin_col[0]:
+                                    dm.loc[idx,col]=0.6
+                                else:
+                                    flag = 0
+                                    while lin_idx[flag] == lin_col[flag]:
+                                        flag += 1
+                                    threshold = scheme[flag-1]
+                                    dm.loc[idx,col] = threshold
+                    dm.to_csv(join(workspace,df),sep='\t')
 
 
 

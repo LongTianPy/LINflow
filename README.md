@@ -5,7 +5,26 @@ workflow used to discover the genomic relatedness of bacteria.
 ## Dependencies
 
 ## Usage
+```
+usage: LINflow.py [-h] [-s SCHEME_ID] [-i INPUT_DIR] [-m METADATA]
+                  {initiate,show_schemes,add_scheme,add_genomes} workspace
 
+LINflow
+
+positional arguments:
+  {initiate,show_schemes,add_scheme,add_genomes}
+  workspace             The location of the workspace
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -s SCHEME_ID          The Scheme based on which LINs are going to be
+                        assigned.
+  -i INPUT_DIR          The directory of genomes going to be added.
+  -m METADATA           The metadata corresponding to the genomes. Download
+                        the sample in https://bit.ly/2Y6Pw3R, and save as CSV
+                        (comma separated values) format file.
+
+```
 ## Functions
 ### Initiate the database
 Initiate a workspace for LINflow with a database and file structure.  
