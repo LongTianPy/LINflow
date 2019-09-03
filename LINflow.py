@@ -465,18 +465,22 @@ if __name__ == '__main__':
                             idx = names[i]
                             col = names[j]
                             if i == j:
-                                dm.loc[idx,col] = 1
+                                dm.loc[idx, col] = 1
                             else:
                                 lin_idx = tmp[i][4].split(',')
                                 lin_col = tmp[j][4].split(',')
                                 if lin_idx[0] != lin_col[0]:
-                                    dm.loc[idx,col]=0.6
+                                    dm.loc[idx, col] = 0.6
+                                elif lin_idx == lin_col:
+                                    dm.loc[idx, col] = 0.999
                                 else:
-                                    flag = 0
-                                    while lin_idx[flag] == lin_col[flag] and flag<300:
-                                        flag += 1
-                                    threshold = scheme[flag-1]
-                                    dm.loc[idx,col] = threshold
+                                    for flag in range(0, len(scheme)):
+                                        if lin_idx[flag] == lin_col[flag]:
+                                            continue
+                                        else:
+                                            break
+                                    threshold = scheme[flag - 1]
+                                    dm.loc[idx, col] = threshold
                     dm.to_csv(join(workspace,df),sep='\t')
 
 
