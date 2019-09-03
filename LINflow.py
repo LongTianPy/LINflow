@@ -473,7 +473,7 @@ if __name__ == '__main__':
                                     dm.loc[idx,col]=0.6
                                 else:
                                     flag = 0
-                                    while lin_idx[flag] == lin_col[flag]:
+                                    while lin_idx[flag] == lin_col[flag] and flag<300:
                                         flag += 1
                                     threshold = scheme[flag-1]
                                     dm.loc[idx,col] = threshold
