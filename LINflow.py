@@ -450,13 +450,13 @@ if __name__ == '__main__':
                         c.execute("SELECT LIN.Genome_ID,Taxonomy.Genus,Taxonomy.Species, Taxonomy.Strain,LIN.LIN "
                                   "FROM LIN,Taxonomy,Genome "
                                   "WHERE LIN.Genome_ID=Taxonomy.Genome_ID AND Genome.Genome_ID=LIN.Genome_ID AND "
-                                  "LIN.Genome_ID IN (SELECT Genome_ID FROM LIN WHERE LIN LIKE ',%') "
+                                  "LIN.Genome_ID IN (SELECT Genome_ID FROM LIN WHERE LIN LIKE '{0},%') "
                                   "AND LIN.Scheme_ID=2".format(lingroup))
                     else:
                         c.execute("SELECT LIN.Genome_ID,Taxonomy.Genus,Taxonomy.Species, Taxonomy.Strain,LIN.LIN "
                                   "FROM LIN,Taxonomy,Genome "
                                   "WHERE LIN.Genome_ID=Taxonomy.Genome_ID AND Genome.Genome_ID=LIN.Genome_ID AND "
-                                  "LIN.Scheme_ID=2".format(lingroup))
+                                  "LIN.Scheme_ID=2")
                     tmp = c.fetchall()
                     names = [" ".join(i[1:4]) for i in tmp]
                     dm = pd.DataFrame(0,columns=names,index=names)
