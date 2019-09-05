@@ -124,7 +124,7 @@ def get_parsed_args():
     parser.add_argument("-i", dest="input_dir", help="The directory of genomes going to be added.",default='')
     parser.add_argument("-m", dest="metadata", default='', help="The metadata corresponding to the genomes. Download the sample in https://bit.ly/2Y6Pw3R, and save as CSV (comma separated values) format file.")
     parser.add_argument("-d", dest="df",default='',help="The file name of the ANI matrix.")
-    parser.add_argument("-l", dest='lingroup',default='', help="The LINgroup of genomes to show distance. Default: '', to see all.")
+    parser.add_argument("-l", dest='lingroup',default='', type=str, help="The LINgroup of genomes to show distance. Default: '', to see all.")
     # parser.add_argument("-p", dest="privacy", help="Is it private information")
     args = parser.parse_args()
     return args
