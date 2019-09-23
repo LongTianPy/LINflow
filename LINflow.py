@@ -457,7 +457,7 @@ if __name__ == '__main__':
                                       "WHERE LIN.Genome_ID=Taxonomy.Genome_ID AND Genome.Genome_ID=LIN.Genome_ID AND " \
                                       "LIN.Genome_ID IN (SELECT Genome_ID FROM LIN WHERE LIN LIKE '{0},%') " \
                                       "AND LIN.Scheme_ID=2 " \
-                                      "AND Taxnomy.Genus='{1}' " \
+                                      "AND Taxonomy.Genus='{1}' " \
                                       "AND Taxonomy.Species='{2}'".format(lingroup,genus,species)
                             else:
                                 genus = taxonomy
@@ -486,7 +486,7 @@ if __name__ == '__main__':
                                       "FROM LIN,Taxonomy,Genome " \
                                       "WHERE LIN.Genome_ID=Taxonomy.Genome_ID AND Genome.Genome_ID=LIN.Genome_ID " \
                                       "AND LIN.Scheme_ID=2 " \
-                                      "AND Taxnomy.Genus='{0}' " \
+                                      "AND Taxonomy.Genus='{0}' " \
                                       "AND Taxonomy.Species='{1}'".format(genus,species)
                             else:
                                 genus = taxonomy
@@ -494,7 +494,7 @@ if __name__ == '__main__':
                                       "FROM LIN,Taxonomy,Genome " \
                                       "WHERE LIN.Genome_ID=Taxonomy.Genome_ID AND Genome.Genome_ID=LIN.Genome_ID " \
                                       "AND LIN.Scheme_ID=2 " \
-                                      "AND Taxnomy.Genus='{0}' ".format(genus)
+                                      "AND Taxonomy.Genus='{0}' ".format(genus)
                     c.execute(sql)
                     tmp = c.fetchall()
                     names = [" ".join(i[1:4]) for i in tmp]
