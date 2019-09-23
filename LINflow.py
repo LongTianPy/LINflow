@@ -118,13 +118,14 @@ def get_parsed_args():
     parser = argparse.ArgumentParser(
         description="LINflow"
     )
-    parser.add_argument("function", type=str, choices=['initiate','show_schemes','add_scheme','add_genomes','infer_distance'])
+    parser.add_argument("function", type=str, choices=['initiate','show_schemes','add_scheme','add_genomes','infer_distance_by_LIN')
     parser.add_argument("workspace", type=str, help="The location of the workspace")
     parser.add_argument("-s", dest="Scheme_ID", help="The Scheme based on which LINs are going to be assigned.", type=int,default=0)
     parser.add_argument("-i", dest="input_dir", help="The directory of genomes going to be added.",default='')
     parser.add_argument("-m", dest="metadata", default='', help="The metadata corresponding to the genomes. Download the sample in https://bit.ly/2Y6Pw3R, and save as CSV (comma separated values) format file.")
     parser.add_argument("-d", dest="df",default='',help="The file name of the ANI matrix.")
     parser.add_argument("-l", dest='lingroup',default='', type=str, help="The LINgroup of genomes to show distance. Default: '', to see all.")
+    parser.add_argument("-t", dest='taxonomy',default='',type=str,help='The taxon of selection. Default: ""')
     # parser.add_argument("-p", dest="privacy", help="Is it private information")
     args = parser.parse_args()
     return args
@@ -441,22 +442,60 @@ if __name__ == '__main__':
                 else:
                     df = args.df
                     lingroup = args.lingroup
+                    taxonomy = args.taxonomy
                     os.chdir(workspace)
                     conn, c = connect_to_db()
                     c.execute("SELECT Cutoff FROM Scheme WHERE Scheme_ID=2")
                     scheme = c.fetchone()[0].split(',')
                     scheme = [float(i)/100 for i in scheme]
                     if lingroup != '':
-                        c.execute("SELECT LIN.Genome_ID,Taxonomy.Genus,Taxonomy.Species, Taxonomy.Strain,LIN.LIN "
-                                  "FROM LIN,Taxonomy,Genome "
-                                  "WHERE LIN.Genome_ID=Taxonomy.Genome_ID AND Genome.Genome_ID=LIN.Genome_ID AND "
-                                  "LIN.Genome_ID IN (SELECT Genome_ID FROM LIN WHERE LIN LIKE '{0},%') "
-                                  "AND LIN.Scheme_ID=2".format(lingroup))
+                        if taxonomy != '':
+                            if len(taxonomy.split(' '))>1:
+                                [genus,species] = taxonomy.split(' ')
+                                sql = "SELECT LIN.Genome_ID,Taxonomy.Genus,Taxonomy.Species,Taxonomy.Strain,LIN.LIN " \
+                                      "FROM LIN,Taxonomy,Genome " \
+                                      "WHERE LIN.Genome_ID=Taxonomy.Genome_ID AND Genome.Genome_ID=LIN.Genome_ID AND " \
+                                      "LIN.Genome_ID IN (SELECT Genome_ID FROM LIN WHERE LIN LIKE '{0},%') " \
+                                      "AND LIN.Scheme_ID=2 " \
+                                      "AND Taxnomy.Genus='{1}' " \
+                                      "AND Taxonomy.Species='{2}'".format(lingroup,genus,species)
+                            else:
+                                genus = taxonomy
+                                sql = "SELECT LIN.Genome_ID,Taxonomy.Genus,Taxonomy.Species,Taxonomy.Strain,LIN.LIN " \
+                                      "FROM LIN,Taxonomy,Genome " \
+                                      "WHERE LIN.Genome_ID=Taxonomy.Genome_ID AND Genome.Genome_ID=LIN.Genome_ID AND " \
+                                      "LIN.Genome_ID IN (SELECT Genome_ID FROM LIN WHERE LIN LIKE '{0},%') " \
+                                      "AND LIN.Scheme_ID=2 " \
+                                      "AND Taxnomy.Genus='{1}' ".format(lingroup, genus)
+                        else:
+                            sql = "SELECT LIN.Genome_ID,Taxonomy.Genus,Taxonomy.Species, Taxonomy.Strain,LIN.LIN " \
+                                      "FROM LIN,Taxonomy,Genome " \
+                                      "WHERE LIN.Genome_ID=Taxonomy.Genome_ID AND Genome.Genome_ID=LIN.Genome_ID AND " \
+                                      "LIN.Genome_ID IN (SELECT Genome_ID FROM LIN WHERE LIN LIKE '{0},%') " \
+                                      "AND LIN.Scheme_ID=2".format(lingroup)
                     else:
-                        c.execute("SELECT LIN.Genome_ID,Taxonomy.Genus,Taxonomy.Species, Taxonomy.Strain,LIN.LIN "
-                                  "FROM LIN,Taxonomy,Genome "
-                                  "WHERE LIN.Genome_ID=Taxonomy.Genome_ID AND Genome.Genome_ID=LIN.Genome_ID AND "
-                                  "LIN.Scheme_ID=2")
+                        if taxonomy == '':
+                            sql = "SELECT LIN.Genome_ID,Taxonomy.Genus,Taxonomy.Species, Taxonomy.Strain,LIN.LIN " \
+                                      "FROM LIN,Taxonomy,Genome " \
+                                      "WHERE LIN.Genome_ID=Taxonomy.Genome_ID AND Genome.Genome_ID=LIN.Genome_ID AND " \
+                                      "LIN.Scheme_ID=2"
+                        else:
+                            if len(taxonomy.split(' '))>1:
+                                [genus,species] = taxonomy.split(' ')
+                                sql = "SELECT LIN.Genome_ID,Taxonomy.Genus,Taxonomy.Species,Taxonomy.Strain,LIN.LIN " \
+                                      "FROM LIN,Taxonomy,Genome " \
+                                      "WHERE LIN.Genome_ID=Taxonomy.Genome_ID AND Genome.Genome_ID=LIN.Genome_ID " \
+                                      "AND LIN.Scheme_ID=2 " \
+                                      "AND Taxnomy.Genus='{0}' " \
+                                      "AND Taxonomy.Species='{1}'".format(genus,species)
+                            else:
+                                genus = taxonomy
+                                sql = "SELECT LIN.Genome_ID,Taxonomy.Genus,Taxonomy.Species,Taxonomy.Strain,LIN.LIN " \
+                                      "FROM LIN,Taxonomy,Genome " \
+                                      "WHERE LIN.Genome_ID=Taxonomy.Genome_ID AND Genome.Genome_ID=LIN.Genome_ID " \
+                                      "AND LIN.Scheme_ID=2 " \
+                                      "AND Taxnomy.Genus='{0}' ".format(genus)
+                    c.execute(sql)
                     tmp = c.fetchall()
                     names = [" ".join(i[1:4]) for i in tmp]
                     dm = pd.DataFrame(0,columns=names,index=names)
