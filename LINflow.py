@@ -118,14 +118,14 @@ def get_parsed_args():
     parser = argparse.ArgumentParser(
         description="LINflow"
     )
-    parser.add_argument("function", type=str, choices=['initiate','show_schemes','add_scheme','add_genomes','infer_distance_by_LIN')
+    parser.add_argument("function", type=str, choices=['initiate','show_schemes','add_scheme','add_genomes','infer_distance_by_LIN'])
     parser.add_argument("workspace", type=str, help="The location of the workspace")
     parser.add_argument("-s", dest="Scheme_ID", help="The Scheme based on which LINs are going to be assigned.", type=int,default=0)
     parser.add_argument("-i", dest="input_dir", help="The directory of genomes going to be added.",default='')
     parser.add_argument("-m", dest="metadata", default='', help="The metadata corresponding to the genomes. Download the sample in https://bit.ly/2Y6Pw3R, and save as CSV (comma separated values) format file.")
     parser.add_argument("-d", dest="df",default='',help="The file name of the ANI matrix.")
     parser.add_argument("-l", dest='lingroup',default='', type=str, help="The LINgroup of genomes to show distance. Default: '', to see all.")
-    parser.add_argument("-t", dest='taxonomy',default='',type=str,help='The taxon of selection. Default: ""')
+    parser.add_argument("-t", dest='taxonomy',default='',type=str,help='The taxon of selection. Default: ')
     # parser.add_argument("-p", dest="privacy", help="Is it private information")
     args = parser.parse_args()
     return args
