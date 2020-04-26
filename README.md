@@ -1,6 +1,5 @@
 # LINflow
-LINflow is a standalone Life Identidication Number (LIN) assignment 
-workflow used to discover the genomic relatedness of bacteria.  
+LINflow is a standalone Life Identification Number (LIN) assignment workflow used to compute the similarity among a set of prokaryotic genomes.
 
 ## Dependencies
 
