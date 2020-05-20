@@ -2,6 +2,8 @@
 LINflow is a standalone Life Identification Number (LIN) assignment workflow used to compute the similarity among a set of prokaryotic genomes.
 
 ## Dependencies
+sourmash
+pyani
 
 ## Usage
 ```
