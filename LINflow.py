@@ -12,6 +12,7 @@ import shutil
 import pandas as pd
 from os.path import isfile, isdir, join
 from distutils.spawn import find_executable
+from tqdm import tqdm
 
 # OBJECTS
 class getLIN(object):
@@ -109,8 +110,8 @@ class Assign_LIN(object):
 
 
 # FUNCTIONS
-def connect_to_db():
-    conn = sqlite3.connect('LINbase.db')
+def connect_to_db(workspace):
+    conn = sqlite3.connect(join(workspace,'LINbase.db'))
     c = conn.cursor()
     return conn, c
 
@@ -135,8 +136,8 @@ def initiate(workspace):
         print("Provided workspace is not empty, please use a clean environment")
     else:
         os.mkdir(workspace)
-        os.chdir(workspace)
-        conn, c = connect_to_db()
+        # os.chdir(workspace)
+        conn, c = connect_to_db(workspace)
         c.execute('CREATE TABLE Genome (Genome_ID INTEGER PRIMARY KEY AUTOINCREMENT,'
                   'FilePath TEXT NOT NULL)')
         c.execute('CREATE TABLE Scheme (Scheme_ID INTEGER PRIMARY KEY AUTOINCREMENT,'
@@ -163,6 +164,7 @@ def initiate(workspace):
         c.execute("INSERT INTO Scheme (Cutoff, LabelNum, Description) VALUES ('{}',300,'A scheme used to approximate the tree')".format(fine_scheme))
         conn.commit()
         conn.close()
+        os.chdir(workspace)
         os.mkdir('Genomes')
         os.mkdir("ANI")
         os.mkdir('Signatures')
@@ -201,7 +203,7 @@ def parse_result(result_file):
         return df
 
 
-def add_first_genome(filename, target_filename, taxonomy, scheme_id):
+def add_first_genome(filename, target_filename, taxonomy, scheme_id,genome_dir,ani_dir,rep_bac_dir,sourmash_dir,tmp_sig_dir,sourmash_result):
     c.execute("insert into Genome (FilePath) values ('{0}')".format(target_filename))
     conn.commit()
     c.execute(
@@ -223,7 +225,7 @@ def add_first_genome(filename, target_filename, taxonomy, scheme_id):
     shutil.copyfile(join(sourmash_dir, "0,0,0,0,0,0", "1.sig"), join(rep_bac_dir, "1.sig"))
     shutil.copy(filename, target_filename)
 
-def add_genome(filename, taxonomy, target_filename,scheme_id):
+def add_genome(filename, taxonomy, target_filename,scheme_id,genome_dir,ani_dir,rep_bac_dir,sourmash_dir,tmp_sig_dir,sourmash_result):
     tmp_sig = create_sketch(filename,join(tmp_sig_dir,"tmp.sig"))
     result_file = compare_sketch(tmp_sig, "rep_bac",'21')
     df = parse_result(result_file)
@@ -345,8 +347,8 @@ def add_genome(filename, taxonomy, target_filename,scheme_id):
     shutil.copy(filename, target_filename)
 
 def show_schemes(workspace):
-    os.chdir(workspace)
-    conn, c = connect_to_db()
+    # os.chdir(workspace)
+    conn, c = connect_to_db(workspace)
     c.execute('SELECT Scheme_ID,Cutoff,Description FROM Scheme')
     tmp = c.fetchall()
     print('Scheme_ID\tDescription\tScheme')
@@ -355,8 +357,8 @@ def show_schemes(workspace):
     conn.close()
 
 def add_scheme(workspace):
-    os.chdir(workspace)
-    conn, c = connect_to_db()
+    # os.chdir(workspace)
+    conn, c = connect_to_db(workspace)
     scheme = input(
         "Please enter a new scheme delimited by comma (,) without the percentage mark and do not include 100 at the end, e.g. 70,80,90,99: ")
     num = len(scheme.split(","))
@@ -418,9 +420,10 @@ if __name__ == '__main__':
             elif method == 'add_genomes':
                 input_dir, meta, scheme_id = check_arguments(args)
                 df = pd.read_csv(meta, sep=",", header=0, index_col=0)
-                os.chdir(workspace)
-                conn, c = connect_to_db()
-                for i in df.index:
+                # os.chdir(workspace)
+                conn, c = connect_to_db(workspace)
+                for j in tqdm(range(len(df.index))):
+                    i = df.index[j]
                     filename = join(input_dir,str(i))
                     uuid_filename = str(uuid.uuid4()) + ".fasta"
                     target_filename = join(genome_dir,uuid_filename)
@@ -431,9 +434,9 @@ if __name__ == '__main__':
                     c.execute("select count(Genome_ID) from Genome")
                     size = c.fetchone()[0]
                     if size == 0:
-                        add_first_genome(filename,target_filename,taxonomy,scheme_id)
+                        add_first_genome(filename,target_filename,taxonomy,scheme_id,genome_dir,ani_dir,rep_bac_dir,sourmash_dir,tmp_sig_dir,sourmash_result)
                     else:
-                        add_genome(filename,taxonomy,target_filename,scheme_id)
+                        add_genome(filename,taxonomy,target_filename,scheme_id,genome_dir,ani_dir,rep_bac_dir,sourmash_dir,tmp_sig_dir,sourmash_result)
                 conn.close()
             elif method == 'infer_distance':
                 if args.df == '':
@@ -443,8 +446,8 @@ if __name__ == '__main__':
                     df = args.df
                     lingroup = args.lingroup
                     taxonomy = args.taxonomy
-                    os.chdir(workspace)
-                    conn, c = connect_to_db()
+                    # os.chdir(workspace)
+                    conn, c = connect_to_db(workspace)
                     c.execute("SELECT Cutoff FROM Scheme WHERE Scheme_ID=2")
                     scheme = c.fetchone()[0].split(',')
                     scheme = [float(i)/100 for i in scheme]
